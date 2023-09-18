@@ -801,6 +801,246 @@ Fall transition time = time(slew_high_fall_thr) - time (slew_low_fall_thr)
 <summary>DAY 4 : Prelayout timming layout analysis and inportance of good clock tree </summary>
 <br>
 
+## 1) TIMMING MODELLING USING DELAY TABLES
+
+### Lab challenge to find missing or incorrect rules and fix them
+
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/fa55462f-7b65-47f3-a4e5-8e68d129318a)
+
+       - Converting grid info into Track info
+       - Go to openlane directory / sky130_fd_sc_hd 
+       - type less tracks.info
+
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/602d9bf5-5e1b-4430-9548-91a638e728f0)
+
+
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/da8cc22a-50f0-4c1f-87c4-126e468c5c8c)
+
+
+      - Here 1st value indicates the offset and 2nd value indicates the pitch along provided direction
+
+ 
+ ### Setting grid values using above file info
+
+        - ext2spice 
+        - help grid
+        - grid 0.46um 0.34um 0.23um 0.17um
+
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/a683c3e1-d7d1-4711-8386-018aab673dd5)
+
+
+### Before grid vs After grid
+
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/c6cb22f5-3f83-40db-93b5-f58c312bf0a4)
+
+
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/281679a9-746d-4628-a29c-688af381356c)
+
+
+
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/70e4797b-07bc-4ef5-84f5-76d2056a818c)
+
+        - From the above pic, its confirmed that the pins A and Y are at the intersection of X and Y tracks. So the first condition is met.
+        - The PR boundary is taking 3 grids on width and 9 grids on height which says that the 2nd condition is also met
+
+
+
+## GENERATION OF A LEF FILE
+        - Once the layout is perfect we can generate the lef file
+        - In the tkcon window type the following command to save the updated layout
+              > save sky130_vsdinv.mag
+        - once it is saved then go to the terminal window and the type 
+              > magic -T sky130A.Tech sky130_vsdinv.mag &
+        - A magic layout opens , In the tkcon window type 
+              > lef write
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/4de5491e-5476-43b0-8b21-0dca3c552fcf)
+
+
+        - Once this is done lef file should be created in the vsd file
+
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/91bdddce-da28-4f63-b12d-1a949b4a7e04)
+
+
+        - To open the lif file type the below command in the terminal
+              > less sky130_vsdinv.lef
+
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/e0991f65-6643-440d-9f4a-82b7bf6c078a)
+
+
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/2f6141f0-aee0-44f4-99c2-0e1dc4b3a129)
+
+
+## STEPS TO INCLUDE NEW STEPS IN THE SYNTHESIS
+
+        - Open the picorv32a pwd in the terminal
+        - copy the path 
+
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/e7915f78-3988-4446-b856-157a8e463079)
+
+        - Go to the vsdstdcelldesign in the other terminal type 
+              > cp sky130_vsdinv.lef /home/vsduser/Desktop/work/tools/openlane_working_dir/openlane/designs/picorv32a
+
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/8005ee44-8af2-42a2-9a8f-2ba7dcf19f70)
+
+        - Now if u check in the picorv terminal, the lef file will be copied 
+
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/f4aab1a1-5f67-4973-8545-2b5ce7e84d70)
+
+
+        - Modify the config.tcl by
+             > vim config.tcl
+        - In the design's config.tcl file add the below line to point to the lef location which is required during spice extraction.
+               > set ::env(EXTRA_LEFS) [glob $::env(OPENLANE_ROOT)/designs/$::env(DESIGN_NAME)/src/*.lef]
+        - Include the below command to include the additional lef into the flow:
+               > set lefs [glob $::env(DESIGN_DIR)/src/*.lef]
+               > add_lefs -src $lefs
+        - Run the interactive mode 
+
+ ![image](https://github.com/nithinkolar/pes_Openlane_work/assets/142583979/42df38b7-83e5-46dc-bd9f-ce4bc650e118)
+
+
+
+## TIMMING ANALYSIS WITH REAL CLOCKS USING OPEN STA
+
+         - Configure OpenSTA for Post-Synth Timing Analysis
+         - We must create two files
+              - The first one must be in the openlane directory
+              - This file is known as the 'pre_sta.conf' file.
+
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/52bd3084-209f-4127-bf1f-3b8584be01c9)
+
+
+              - The second is the my_base.sdc file.
+              - This should be in the 'src/sky130' directory under the picorv32a directory.
+             
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/b41c0c91-3554-4274-8b4a-5dbbb9deb6b3)
+
+              - To run tyming analysis we type 
+                    > sta pre_sta.conf
+
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/f08b2dc2-f795-4349-818c-8f87cde2458f)
+
+
+             - There is a slack violation
+             - Settinf MAX_FANOUT value to 4 reduces the slack violation.
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/6eee637f-87bd-4e8d-865e-8327f68b895b)
+
+
+## Clock Tree Synthesis TritonCTS and Signal Integrity
+### Run CTS
+
+             -  To run CTS we need to type the command
+                       > run_cts
+                       > New .v is created
+
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/7e59f5cd-b2d1-41ba-a487-9b5421ad567e)
+
+#### Timing Analysis with Real CLocks using OpenSTA
+
+             - First we type the command 
+                    > openroad.
+             - Then we read the .lef file using the command
+                    > read_lef /openLANE_flow/designs/picorv32a/runs/16-09_19-58/tmp/merged.lef
+
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/54c1ce7b-efb8-46f4-8c38-e3f97f7bb655)
+
+              - Then we read the .def file.
+                     > read_def /openLANE_flow/designs/picorv32a/runs/16-09_19-58/results/cts/picorv32a.cts.def
+
+
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/6dc7446a-7a86-4216-83ec-7344c29f54ac)
+
+              - Then we type the below commands
+                     > write_db pico_cts.db
+                     > read_db pico_cts.db
+                     > read_verilog /openLANE_flow/designs/picorv32a/runs/16-09_19-58/results/synthesis/picorv32a.synthesis_cts.v
+                     > read_liberty -max $::env(LIB_SLOWEST)
+                     > read_liberty -max $::env(LIB_FASTEST)
+
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/fe0fde4b-5d4f-4a80-9c22-dac80968c88b)
+
+              - We read the .src file
+                    > read_sdc /openLANE_flow/designs/picorv32a/src/sky130/my_base.sdc
+
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/f12dcd3c-a93f-41ad-aa0e-0fdeec4a5e7b)
+
+
+              - We set the clock and then check it
+                    > set_propagated_clock [all_clocks]
+                    > report_checks -path_delay min_max -format full_clock_expanded -digits 4
+
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/b12af459-13e1-4baa-93d1-ec490dfdbbb5)
+
+
+
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/3f0e2cec-c21f-430b-a607-982dadd3f87f)
+
+
+              - We perform it again for the more accurate result
+              
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/5b73f478-c4e7-401a-8b74-1b97502de832)
+
+
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/9c442148-ebab-4836-a206-6195bb34d13a)
+
+
+
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/199dab35-c6ed-4a1e-8dd1-ef4be013d32b)
+
+              -  Next type the following commands 
+                   > report_clock_skew -hold
+                   > report clock_skew -setup
+
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/e5e8a384-fe0c-4b63-92a8-db1f6f6ec3df)
+
+
+[Back to COURSE](https://github.com/nithinkolar/pes_Openlane_work/tree/main#course)
+
+</details>
+<details>
+<summary>DAY 5 : Final steps for RTL2GDS using triton route and openSTA </summary>
+<br>
+
+## Power Distribution Network and Routing
+
+After generating our clock tree network and verifying post routing STA checks we are ready to generate the power distribution network gen_pdn in OpenLANE:
+
+     The PDN feature within OpenLANE will create:
+
+          Power ring global to the entire core
+          Power halo local to any preplaced cells
+          Power straps to bring power into the center of the chip
+          Power rails for the standard cells
+
+   ### Build Power Distribution network
+   
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/f6061eef-02f9-4f41-801f-b8a89a6a4bd6)
+
+
+
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/31fa2edb-fb47-4d6d-b564-b0cee84cac48)
+
+   ### Global and Detailed Routing
+
+   - OpenLANE uses TritonRoute as the routing engine run_routing for physical implementations of designs. Routing consists of two stages:
+           > Global Routing - Routing guides are generated for interconnects on our netlist defining what layers, and where on the chip each of the nets will be reputed
+           > Detailed Routing - Metal traces are iteratively laid across the routing guides to physically implement the routing guides
+
+   - If DRC errors persist after routing the user has two options:
+           > Re-run routing with higher QoR settings
+           > Manually fix DRC errors specific in tritonRoute.drc file
+
+  ### SPEF Extraction
+
+    - After routing has been completed interconnect parasitics can be extracted to perform sign-off post-route STA analysis. The parasitics are extracted into a SPEF file. The SPEF extractor 
+      is not included within OpenLANE as of now.
+           > cd ~/Desktop/work/tools/SPEFEXTRACTOR
+           > python3 main.py <path to merged.lef in tmp> <path to def in routing>
+    - The SPEF File will be generated in the location where def file is present
+
+
+[Back to COURSE](https://github.com/nithinkolar/pes_Openlane_work/tree/main#course)
+
 [Back to COURSE](https://github.com/nithinkolar/pes_Openlane_work/tree/main#course)
 
 </details>

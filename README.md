@@ -896,8 +896,17 @@ Fall transition time = time(slew_high_fall_thr) - time (slew_low_fall_thr)
                > add_lefs -src $lefs
         - Run the interactive mode 
 
- ![image](https://github.com/nithinkolar/pes_Openlane_work/assets/142583979/42df38b7-83e5-46dc-bd9f-ce4bc650e118)
+        - Once the synthesis is successfull we get the following output
+        - To run the floorplans and placements we typr the following commands
+                > run_floorplan
+                > run_placement
 
+        - magic -T /home/vsduser/Desktop/work/tools/openlane_working_dir/pdks/sky130A/libs.tech/magic/sky130A.tech lef read ../../tmp/merged.lef def read picorv32a.placement.def &
+
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/7a52f164-bd7f-44a4-902d-48c900fc7e25)
+
+
+![image](https://github.com/nithinkolar/pes_openlane_work/assets/145356962/2b881a1f-2c7b-4061-a832-cdb7dd8a21d4)
 
 
 ## TIMMING ANALYSIS WITH REAL CLOCKS USING OPEN STA
@@ -1038,14 +1047,5 @@ After generating our clock tree network and verifying post routing STA checks we
            > python3 main.py <path to merged.lef in tmp> <path to def in routing>
     - The SPEF File will be generated in the location where def file is present
 
-
-[Back to COURSE](https://github.com/nithinkolar/pes_Openlane_work/tree/main#course)
-
-[Back to COURSE](https://github.com/nithinkolar/pes_Openlane_work/tree/main#course)
-
-</details>
-<details>
-<summary>DAY 5 : Final steps for RTL2GDS using triton route and openSTA </summary>
-<br>
 
 [Back to COURSE](https://github.com/nithinkolar/pes_Openlane_work/tree/main#course)

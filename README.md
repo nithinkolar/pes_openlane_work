@@ -897,7 +897,7 @@ Fall transition time = time(slew_high_fall_thr) - time (slew_low_fall_thr)
         - Run the interactive mode 
 
         - Once the synthesis is successfull we get the following output
-        - To run the floorplans and placements we typr the following commands
+        - To run the floorplans and placements we typr the following commands 
                 > run_floorplan
                 > run_placement
 
